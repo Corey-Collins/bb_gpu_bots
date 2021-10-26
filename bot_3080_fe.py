@@ -48,8 +48,8 @@ from webdriver_manager.firefox import GeckoDriverManager
 # Test Link (Ryzen 5800x) - The Ryzen 5800x is always available and still uses Bestbuy's Queue System.
 # https://www.bestbuy.com/site/amd-ryzen-7-5800x-4th-gen-8-core-16-threads-unlocked-desktop-processor-without-cooler/6439000.p?skuId=6439000
 test_mode = False  # Set test_mode to True when testing bot checkout process, and set it to False when your done testing.
-headless_mode = True  # Set False for testing. If True, it will hide Firefox in background for faster checkout speed.
-webpage_refresh_timer = 3  # Default 3 seconds. If slow internet and the page isn't fully loading, increase this.
+headless_mode = False  # Set False for testing. If True, it will hide Firefox in background for faster checkout speed.
+webpage_refresh_timer = 2  # Default 3 seconds. If slow internet and the page isn't fully loading, increase this.
 
 # 1. Product URL
 url = 'https://www.bestbuy.com/site/nvidia-geforce-rtx-3080-10gb-gddr6x-pci-express-4-0-graphics-card-titanium-and-black/6429440.p?skuId=6429440'
@@ -85,8 +85,14 @@ def time_sleep(x, driver):
         sys.stdout.write('Monitoring Page. Refreshing in{:2d} seconds'.format(i))
         sys.stdout.flush()
         time.sleep(1)
-    driver.execute_script('window.localStorage.clear();')
-    driver.refresh()
+    try:
+        driver.execute_script('window.localStorage.clear();')
+    except Exception as e:
+        print("Unable to clear local storage", e)
+    try:
+        driver.refresh()
+    except Exception as e:
+        print("Refresh failed!", e)
 
 def xpath_soup(element):
     """
@@ -151,7 +157,12 @@ def searching_for_product(driver):
     print("Bot deployed!\n")
 
     while True:
-        soup = extract_page()
+        try:
+            soup = extract_page()
+        except:
+            time.sleep(3)
+            soup = extract_page()
+        
         wait = WebDriverWait(driver, 15)
         wait2 = WebDriverWait(driver, 5)
 
